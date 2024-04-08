@@ -1,0 +1,101 @@
+{
+    "users": [
+        {
+            "id": 1,
+            "name": "Elahe",
+            "username": "Elahe",
+            "crime": 50000,
+            "role": "ADMIN"
+        },
+        {
+            "id": 2,
+            "name": "Omid",
+            "username": "Omid",
+            "crime": 10000,
+            "role": "ADMIN"
+        },
+        {
+            "id": "9dffcc0d-4f3b-40e7-9ed7-4b5197e2e763",
+            "name": "sara",
+            "username": "sara123",
+            "crime": 0,
+            "role": "USER"
+        },
+        {
+            "id": "c8a3eba2-76e9-417b-9cc4-f4ba920776a2",
+            "name": "nasim",
+            "username": "nasim1",
+            "crime": 0,
+            "role": "USER"
+        },
+        {
+            "id": "354d8c72-cd0a-48be-a68f-04d9e138a688",
+            "name": "Eli",
+            "username": "Eli_",
+            "crime": 0,
+            "role": "USER"
+        }
+    ],
+    "books": [
+        {
+            "id": 1,
+            "title": "first edit",
+            "author": "author",
+            "free": 0
+        },
+        {
+            "id": 2,
+            "title": "second",
+            "author": "second author",
+            "price": 230000,
+            "free": 1
+        },
+        {
+            "id": "56791f50-0a02-4d69-be9f-db9e877470fd",
+            "title": "new",
+            "author": "newww",
+            "price": 234000,
+            "free": 1
+        },
+        {
+            "id": "96b72835-606f-46fe-96ac-37930f2471fa",
+            "title": "new",
+            "author": "me",
+            "price": 234000,
+            "free": 1
+        },
+        {
+            "id": "66571685-3715-4f4f-a7a7-74fa1af3d45c",
+            "title": "new",
+            "author": "me",
+            "price": 234000,
+            "free": 1
+        },
+        {
+            "id": "9361ac92-4f90-466e-89da-c310838d5b52",
+            "title": "new",
+            "author": "me",
+            "price": 234000,
+            "free": 1
+        },
+        {
+            "id": "59c15f9b-5c47-4901-b2f8-c80633dbfc9d",
+            "title": "new",
+            "author": "me",
+            "price": 234000,
+            "free": 1
+        }
+    ],
+    "rent": [
+        {
+            "id": "10ae6b8c-047a-41a6-a257-95af0d7ba569",
+            "userID": 1,
+            "bookID": 2
+        },
+        {
+            "id": "4a663646-1911-4a2e-ae38-6aac72f5b68c",
+            "userID": 1,
+            "bookID": 2
+        }
+    ]
+}
