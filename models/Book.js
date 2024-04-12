@@ -39,67 +39,69 @@ const add = async (newBook) => {
         }
 };
 
-const giveBack = (bookID) => {
-    return new Promise((resolve, reject) => {
-        db.books.forEach((book) => {
-            if(book.id === Number(bookID)) {
-                book.free = 1;
-            }
-        });
-
-        fs.writeFile("./db.json", JSON.stringify(db, null, 4), (err) => {
-            if(err) {
-                reject(err);
-            } else {
-                resolve({message : "successfull"})
-            }
-            
-        });
+const giveBack = async (bookID) => {
+    let done = false;
+    const db = await data.db();
+    const bookCollection = db.collection('books');
+    const book = bookCollection.updateOne({_id : new ObjectId(bookID)},
+    {
+        $set : {
+            free : 1
+        }
     });
+      
+    if(book) {
+        done = true;
+        return {message : "successfull"}
+    }
 };
 
-const edit = (bookID, reqBody) => {
-    return new Promise((resolve, reject) => {
-        db.books.forEach((book) => {
-            if(book.id === Number(bookID)) {
-                book.title = reqBody.title;
-                book.author = reqBody.author;
-                book.price = reqBody.price;
+const edit = async (bookID, reqBody) => {
+    const db = await data.db();
+    const bookCollection = db.collection('books');
+    bookCollection.updateOne(
+        {_id : new ObjectId(bookID)},
+        {
+            $set : {
+                title : reqBody.title,
+                author : reqBody.author,
+                price : reqBody.price
             }
         });
+       
+        return {message : "Book data have changed successfully."}
+};
+
+const isFree = async (bookID) => {
+    const db = await data.db();
+    const bookCollection = db.collection('books');
+    const book = bookCollection.find(
+        {
+            _id : new ObjectId,
+            free : 1
+        });
+    return book
+};
+
+const rent = async (bookID, newRent) => {
+    const db = await data.db();
+    const rentCollection = db.collection('rents');
+    const bookCollection = db.collection('books');
+    await bookCollection.updateOne(
+        {_id : new ObjectId(bookID)},
+        {
+            $set : {
+                free : 0
+            }
+        }
+    );
     
-        fs.writeFile("./db.json", JSON.stringify(db, null, 4), (err) => {
-            if(err) {
-                reject(err);
-            } else {
-                resolve({message : "Book data have changed successfully."})
-            }
-        });
-            
-    });
-};
-
-const isFree = (bookID) => {
-    return db.books.find((book) => book.id === Number(bookID) && book.free === 1);
-};
-
-const rent = (bookID, newRent) => {
-    return new Promise((resolve, reject) => {
-        db.books.forEach((book) => {
-            if(book.id === Number(bookID)) {
-                book.free = 0;
-            }
-        });
-        db.rent.push(newRent);
-    
-        fs.writeFile("./db.json", JSON.stringify(db, null, 4), (err) => {
-            if(err) {
-                reject(err);
-            } else {
-                resolve({message : "Book reserved successfully."})
-            }
-        });
-    });
+    const rent = await rentCollection.insertOne(newRent);
+    if(rent) {
+        return {message : "Book reserved successfully."};
+    } else {
+        return {message : "couldnt reserve this book."};
+    };
 };
 
 

@@ -43,21 +43,18 @@ const addNewBook = (req, res) => {
         });
 };
 
-const giveBackBook = (req, res) => {
+const giveBackBook = async (req, res) => {
     const parsedUrl = url.parse(req.url, true);
     const bookID = parsedUrl.query.id;
 
-    const returnedBook = BookModel.giveBack(bookID)
-        .then((value) => {
+    const returnedBook = await BookModel.giveBack(bookID)
+        if(returnedBook.done) {
             res.writeHead(200, {"Content-Type" : "application/json"});
-            res.write(JSON.stringify(value));
-            res.end();
-        })
-        .catch((value) => {
+        } else {
             res.writeHead(404, {"Content-Type" : "application/json"});
-            res.write(JSON.stringify(value));
-            res.end();
-        });
+        };
+        res.write(JSON.stringify(returnedBook));
+        res.end();
 };
 
 const editBook = (req, res) => {
@@ -67,18 +64,16 @@ const editBook = (req, res) => {
         req.on("data", (data) => {
             bookNewInfos = bookNewInfos + data.toString();
         });
-        req.on("end", () => {
+        req.on("end", async () => {
             const reqBody = JSON.parse(bookNewInfos);
-                BookModel.edit(bookID, reqBody)
-                .then((value) => {
-                res.writeHead(200, {"Content-Type" : "application/json"});
-                res.write(JSON.stringify(value));
+                const edited = await BookModel.edit(bookID, reqBody)
+                if(edited) {
+                    res.writeHead(200, {"Content-Type" : "application/json"});
+                } else {
+                    res.writeHead(500, {"Content-Type" : "application/json"});
+                }
+                res.write(JSON.stringify(edited));
                 res.end();
-                }).catch((value) => {
-                res.writeHead(500, {"Content-Type" : "application/json"});
-                res.write(JSON.stringify(value));
-                res.end();
-                });
         });
 };
 
@@ -89,26 +84,25 @@ const rentBook = (req, res) => {
             reqBody = reqBody + data.toString();
         });
 
-        req.on('end', () => {
+        req.on('end', async () => {
             let {userID, bookID} = JSON.parse(reqBody);
 
-            const isFreeBook = BookModel.isFree(bookID);
+            const isFreeBook = await BookModel.isFree(bookID);
 
             if(isFreeBook) {
                 const newRent = {
-                    id : crypto.randomUUID(),
                     userID,
                     bookID
                 };
-                BookModel.rent(bookID, newRent).then((value) => {
+                const rent = await BookModel.rent(bookID, newRent)
+                if(rent) {
                     res.writeHead(201, {"Content-Type" : "application/json"});
-                    res.write(JSON.stringify(value))
-                    res.end();
-                }).catch((value) => {
+                } else {
                     res.writeHead(500, {"Content-Type" : "application/json"});
-                    res.write(JSON.stringify(value))
-                    res.end();
-                })
+
+                }
+                res.write(JSON.stringify(rent))
+                res.end();
             } else {
                 res.writeHead(401, {"Content-Type" : "application/json"});
                 res.write(JSON.stringify({message : "This book is not free."}));
