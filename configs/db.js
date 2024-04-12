@@ -1,12 +1,19 @@
-const {MongoClient} = require("mongodb");
+require("dotenv").config();
+const {MongoClient, ObjectId} = require("mongodb");
 const url = "mongodb://localhost:27017/";
 const dbConnection = new MongoClient(url);
-const dbName = "library";
-const main = async () => {
-    await dbConnection.connect();
-    const db = dbConnection.db(dbName);
-    const userCollection = db.collection("users");
-    userCollection.insertOne({"name" : "Elahe"});
+const dbName = process.env.dbName;
+
+const db = async () => {
+            await dbConnection.connect();
+            console.log("Connected to database successfully!");
+    
+            const db = dbConnection.db(dbName);
+            return db;
 };
 
-main();
+module.exports = {
+    db
+}
+
+

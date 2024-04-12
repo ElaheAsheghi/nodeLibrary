@@ -2,44 +2,41 @@
 const { resolve } = require("path");
 const db = require("./../db.json");
 const fs = require("fs");
+const data = require("./../configs/db");
+const { ObjectId } = require("mongodb");
 
-const getBook = () => { //read file is an async func so we need promise.
-    return new Promise((resolve, reject) => {
-        resolve(db.books);
-    });
+const getBook = async () => {
+    const db = await data.db();
+    const bookCollection = db.collection("books");
+    const books = bookCollection.find({}).toArray();
+    return books;
 };
 
-const remove = (bookID) => {
-    return new Promise((resolve, reject) => {
-        const newBooks = db.books.filter((book) => book.id != Number(bookID));
-        
-        if(db.books.length === newBooks.length){
-            reject({message : "Not found this book!"});
+const remove = async (bookID) => {
+    let deleted = false
+    const db = await data.db();
+    const bookCollection = db.collection('books');
+    const result = bookCollection.deleteOne({_id : new ObjectId(bookID)}); 
+
+    if((await result).deletedCount) {
+        deleted = true
+        return {message: "Removed successfully"};
+    } else {
+        return {message: "Not found!"};
+    };
+};
+
+const add = async (newBook) => {
+    let added = false
+    const db = await data.db();
+    const bookCollection = db.collection('books');
+    const addToDb = bookCollection.insertOne(newBook); //add this newBook to database
+        if(addToDb) {
+            added = true
+            return {message : "New book added successfully"};  
         } else {
-            fs.writeFile(`${process.cwd()}/db.json`, JSON.stringify({...db, books:newBooks}, null, 2), (err) => {
-                if(err) {
-                    reject(err);
-                }
-                resolve({message : "Removed successfully!"});
-            });
-        };
-    });
-};
-
-const add = (newBook) => {
-    return new Promise((resolve, reject) => {
-        db.books.push(newBook); //add this newBook to database
-            
-            fs.writeFile("db.json", JSON.stringify(db, null, 4), (err) => { //save this database with newbook
-                if(err) {
-                    reject(err);
-                } else {
-                    resolve({message : "New book added successfully"});
-                }
-
-            });
-    });
-            
+            return {message : "server error"};
+        }
 };
 
 const giveBack = (bookID) => {

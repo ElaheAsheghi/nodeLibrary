@@ -14,17 +14,13 @@ const removeBook = async (req, res) => {
     const bookID = parsedUrl.query.id;
 
     const removedBook = await BookModel.remove(bookID)
-    .then((value) => {
+    if(removedBook.deleted) {
         res.writeHead(200, { "Content-Type" : "application/json"});
-        res.write(JSON.stringify(value));
-        res.end();
-    })
-    .catch((value) => {
+    } else {
         res.writeHead(404, { "Content-Type" : "application/json"});
-        res.write(JSON.stringify(value));
-        res.end();
-    });
-    
+    }
+    res.write(JSON.stringify(removedBook));     
+    res.end();
 };
 
 const addNewBook = (req, res) => {
@@ -32,20 +28,18 @@ const addNewBook = (req, res) => {
         req.on('data', (data) => { //its a event with 'data' name. make event with on(). get data in callback func.
             book = book + data.toString(); 
         });
-        req.on('end', () => { //write a event for ending this req(compelete this req successfully)
+        req.on('end', async () => { //write a event for ending this req(compelete this req successfully)
             console.log(JSON.parse(book));
-            const newBook = {id : crypto.randomUUID(), ...JSON.parse(book), free :  1}; //datas that recieved from client are added to this obj with spread syntax ...book
+            const newBook = {...JSON.parse(book)}; //datas that recieved from client are added to this obj with spread syntax ...book
 
-            const addNew = BookModel.add(newBook)
-                .then((value) => {
+            const addNew = await BookModel.add(newBook)
+                if(addNew.added) {
                     res.writeHead(201, {"Content-Type" : "application/json"}); //201 status for create something successfully
-                    res.write(JSON.stringify(value));
-                    res.end();
-                }).catch((value) => {
+                } else {
                     res.writeHead(500, {"Content-Type" : "application/json"});
-                    res.write(JSON.stringify(value));
-                    res.end();
-                });
+                }
+                res.write(JSON.stringify(addNew));
+                res.end();     
         });
 };
 
