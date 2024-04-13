@@ -1,19 +1,18 @@
 const userModel = require("./../models/User");
 const url = require('url');
 
-const upgradeUser = (req, res) => {
+const upgradeUser = async (req, res) => {
     const parsedUrl = url.parse(req.url, true);
     const userID = parsedUrl.query.id;
 
-    userModel.upgrade(userID).then((value) => {
+    const upgrade = await userModel.upgrade(userID);
+    if(upgrade) {
         res.writeHead(200, {"Content-Type" : "application/json"});
-        res.write(JSON.stringify(value));
-        res.end();
-    }).catch((value) => {
+    } else {
         res.writeHead(500, {"Content-Type" : "application/json"});
-        res.write(JSON.stringify(value));
-        res.end();
-    });
+    }
+    res.write(JSON.stringify(upgrade));
+    res.end();  
 };
 
 const registerUser = (req, res) => {
@@ -23,9 +22,9 @@ const registerUser = (req, res) => {
         user = user + data.toString(); //data is in byte and need this method to convert to string
     });
     
-    req.on("end", () => {
+    req.on("end", async () => {
         const {name, username} = JSON.parse(user);
-        const isUserExist = userModel.find(username);
+        const isUserExist = await userModel.findByUsername(username);
         
         if(name === "" || username === "") {
             res.writeHead(422, {"Content-Type" : "application/json"});
@@ -37,23 +36,20 @@ const registerUser = (req, res) => {
             res.end();
         } else {
             const newUser = {
-                id : crypto.randomUUID(),
                 name : name,
                 username : username,
                 crime : 0,
                 role : "USER"
             };
             
-            userModel.register(newUser).then((value) => {
+            const result = await userModel.register(newUser);
+            if(result) {
                 res.writeHead(201, {"Content-Type" : "application/json"});
-                res.write(JSON.stringify(value));
-                res.end();
-            }).catch((value) => {
+            } else {
                 res.writeHead(500, {"Content-Type" : "application/json"});
-                res.write(JSON.stringify(value));
-                res.end();
-            })
-            
+            }
+            res.write(JSON.stringify(result));
+            res.end();
         };
     });
 };
@@ -67,18 +63,17 @@ const addCrime = (req, res) => {
             reqBody = reqBody + data.toString(); //bc data is in binary lang
         });
 
-        req.on('end', () => {
+        req.on('end', async () => {
             const {crime} = JSON.parse(reqBody); //bc data is in JSON and we need JS
             
-            userModel.crime(userID, crime).then((value) => {
+            const add = await userModel.crime(userID, crime);
+            if(add) {
                 res.writeHead(200, {"Content-Type" : "application/json"});
-                res.write(JSON.stringify(value));
-                res.end();
-            }).catch((value) => {
+            } else {
                 res.writeHead(500, {"Content-Type" : "application/json"});
-                res.write(JSON.stringify(value));
-                res.end();
-            });
+            }
+            res.write(JSON.stringify(add));
+            res.end();  
         });
 };
 
@@ -89,20 +84,19 @@ const userLogin = (req, res) => {
             user = user + data.toString();
         });
 
-        req.on('end', () => {
+        req.on('end', async () => {
             const {name, username} = JSON.parse(user);
 
-            const authenticate = userModel.login(name, username);
+            const authenticate = await userModel.login(name, username);
             
             if(authenticate) {
                 res.writeHead(200, {"Content-Type" : "application/json"});
                 res.write(JSON.stringify({message : "login was successfull."}));
-                res.end();
             } else {
                 res.writeHead(401, {"Content-Type" : "application/json"});
                 res.write(JSON.stringify({message : "user not found!"}));
-                res.end();
             };
+            res.end();
         });
 }
 

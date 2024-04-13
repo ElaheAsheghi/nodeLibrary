@@ -2,66 +2,60 @@ const { resolve } = require("path");
 const db = require("./../db.json");
 const fs = require("fs");
 const { rejects } = require("assert");
+const data = require("./../configs/db");
+const { ObjectId } = require("mongodb");
 
-const upgrade = (userID) => {
-    return new Promise((resolve, reject) => {
-        db.users.forEach((user) => {
-            if(user.id === Number(userID)){
-                user.role = "ADMIN";
+const upgrade = async (userID) => {
+    const db = await data.db();
+    const userCollection = db.collection('users');
+    userCollection.updateOne(
+        {_id : new ObjectId(userID)},
+        {
+            $set : {
+                role : "ADMIN"
             }
-        });
-            
-        fs.writeFile("./db.json", JSON.stringify(db, null, 4), (err) => {
-            if(err) {
-                reject(err);
-            } else {
-                resolve({message : "user upgraded successfully"})
-            };
-        });
-    });
+        }
+    );
+    return {message : "user has upgraded successfully."}
 };
 
-const findByUsername = (username) => {
-    return db.users.find((user) => user.username === username);
+const findByUsername = async (username) => {
+    const db = await data.db();
+    const userCollection = db.collection('users');
+    return userCollection.findOne({username : username})
 };
 
-const findByName = (name) => {
-    return db.users.find((user) => user.name === name);
+const findByName = async (name) => {
+    const db = await data.db();
+    const userCollection = db.collection('users');
+    return userCollection.findOne({name : name})
 };
 
-const login = (name, username) => {
-    return db.users.find((user) => user.name === name && user.username === username);
+const login = async (name, username) => {
+    const db = await data.db();
+    const userCollection = db.collection('users');
+    return userCollection.findOne({name : name, username : username})
 };
 
-const register = (newUser) => {
-    return new Promise((resolve, reject) => {
-        db.users.push(newUser);
-
-        fs.writeFile("./db.json", JSON.stringify(db, null, 4), (err) => {
-            if(err) {
-                reject(err);
-            } else {
-                resolve("New user have registered successfully.")
-            };
-        });
-    });
+const register = async (newUser) => {
+    const db = await data.db();
+    const userCollection = db.collection('users');
+    userCollection.insertOne(newUser);
+    return {message : "New user have registered successfully."}
 };
 
-const crime = (userID, crime) => {
-    return new Promise((resolve, reject) => {
-        db.users.forEach((user) => {
-            if(user.id === Number(userID)) { //bc userID is string type
-                user.crime = user.crime + crime;
+const crime = async (userID, crime) => {
+    const db = await data.db();
+    const userCollection = db.collection('users');
+    userCollection.updateOne(
+        {_id : new ObjectId(userID)},
+        {
+            $inc: {
+                crime : crime
             }
-        });
-        fs.writeFile("./db.json", JSON.stringify(db, null, 4), (err) => {
-            if(err) {
-                reject(err);
-            } else {
-                resolve({message : "crime added."})
-            };
-        });
-    });
+        }
+    );
+    return {message : "crime added."}
 };
 
 module.exports = {
